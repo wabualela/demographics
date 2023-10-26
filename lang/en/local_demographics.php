@@ -25,10 +25,4 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['fullname'] = 'Full name';
-$string['gender'] = 'Gender';
-$string['missingfullname'] = 'Missing Full name';
-$string['missinggender'] = 'Missing gender';
-$string['pleasechooseagender'] = 'Please choose a gender';
 $string['pluginname'] = 'Africa demographic';
-$string['save'] = 'Save';
