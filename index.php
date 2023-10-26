@@ -33,43 +33,24 @@ $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 
 $mform = new demographics_form();
+$mform->set_data([
+    'fullname' => $USER->profile['fullname'],
+    'gender' => $USER->profile['gender'],
+]);
 
 if ($mform->is_cancelled()) {
 } else if ($data = $mform->get_data()) {
-   
-    if($DB->record_exists('user_info_field', ['shortname' => 'fullname'])) {
-        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'fullname'], IGNORE_MISSING);
-
-       if($fullnamedata = $DB->get_record('user_info_data',[ 'userid' => $USER->id, 'fieldid' => $fieldid], '*', IGNORE_MISSING)) {
-             $fullnamedata->data = $data->fullname;
-        $DB->update_record('user_info_data', $fullnamedata);
-        redirect("{$CFG->wwwroot}", '👍', null, notification::NOTIFY_SUCCESS);
-       } else {
+    $fields = $DB->get_record('user_info_field');
+    foreach ($fields as $fieldname) {
+        $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => $fieldname], IGNORE_MISSING);
+        $fielddata = $data->$fieldname;
         $DB->insert_record('user_info_data', [
             'userid' => $USER->id,
             'fieldid' => $fieldid,
-            'data' => $data->fullname,
-        ]);
-        redirect("{$CFG->wwwroot}", '👍', null, notification::NOTIFY_SUCCESS);
-       }
-    } else {
-        $DB->insert_record('user_info_field', [
-            "shortname"=> "fullname",
-            "name"=> "Full Name (the name will be use in your Certifications)",
-            "datatype"=> "text",
-            "description"=> null,
-            "descriptionformat"=> "1",
-            "categoryid"=> "1",
-            "sortorder"=> "2",
-            "required"=> "0",
-            "locked"=> "1",
-            "visible"=> "3",
-            "forceunique"=> "0",
-            "signup"=> "1",
-            "defaultdata"=> null,
-            "defaultdataformat"=> "0",
+            'data' => $fielddata,
         ]);
     }
+    redirect("{$CFG->wwwroot}", '👍', null, notification::NOTIFY_SUCCESS);
 }
 
 $PAGE->set_heading($SITE->fullname);

@@ -1,5 +1,4 @@
 <?php
-use core\output\notification;
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -24,27 +23,21 @@ use core\output\notification;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// function local_demographics_after_require_login() {
-//     global $CFG;
-//     if (!is_siteadmin() || $_SERVER['REQUEST_URI'] != "/local/demographics/index.php") {
-//         redirect("{$CFG->wwwroot}/local/demographics/index.php");
-//     }
-// }
-
-function local_demographics_after_config()
+function local_demographics_after_require_login()
 {
-    global $USER, $CFG;
-    if (isloggedin() && !isguestuser()) {
-        if (!is_siteadmin()) {
-            if ($_SERVER['REQUEST_URI'] !== "/local/demographics/index.php") {
-                // die(var_dump($_SERVER['REQUEST_URI'] !== "/local/demographics/index.php"));
-                redirect(
-                    "{$CFG->wwwroot}/local/demographics/index.php"
-                    ,
-                    'Please fill the requited fields',
-                    10,
-                    notification::NOTIFY_INFO
-                );
+    global $DB, $USER;
+    if (!is_siteadmin()) {
+        $fields = $DB->get_records('user_info_field');
+        foreach ($fields as $field) {
+            $record_exists = $DB->record_exists('user_info_data', ['userid' => $USER->id, 'fieldid' => $field->id]);
+            if ($field->locked == true && $record_exists == false) {
+                $field->locked = false;
+                $DB->update_record('user_info_field', $field);
+            }
+            if ($field->locked == false && $record_exists == true) { {
+                    $field->locked = true;
+                    $DB->update_record('user_info_field', $field);
+                }
             }
         }
     }
